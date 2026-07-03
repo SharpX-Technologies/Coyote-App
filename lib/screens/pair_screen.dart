@@ -835,8 +835,10 @@ class _PairScreenState extends State<PairScreen> {
       _isScanning = true;
       _connectStates = [];
     });
+FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
 
-    _scanSubscription = _bleController.devices.item1.startScan().listen((
+    
+    _scanSubscription = FlutterBluePlus.scanResults.listen((
       results,
     ) {
       // Filter only PUCK_ devices and de-duplicate by remoteId so that
@@ -844,7 +846,7 @@ class _PairScreenState extends State<PairScreen> {
       final Map<String, ScanResult> uniqueById = {};
       for (final result in results) {
         final name = result.device.advName;
-        if (!name.startsWith('PUCK_')) continue;
+        if (!name.isNotEmpty) continue;
         uniqueById[result.device.remoteId.str] = result;
       }
       final filteredResults = uniqueById.values.toList();

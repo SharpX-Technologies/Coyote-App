@@ -2505,12 +2505,19 @@ class BleController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> scan() async {
-    devices.item1.startScan().listen((results) {
-      scanResults = results
-          .where((r) => r.device.advName.startsWith('PUCK_'))
-          .toList();
+    FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
+
+    FlutterBluePlus.scanResults.listen((results) {
+      scanResults = results.toList();
+      print(results);
       update();
     });
+    // devices.item1.startScan().listen((results) {
+    //   scanResults = results
+    //       .where((r) => r.device.advName.startsWith('PUCK_'))
+    //       .toList();
+    //   update();
+    // });
   }
 
   bool isConnected({required DeviceSide deviceSide}) {
