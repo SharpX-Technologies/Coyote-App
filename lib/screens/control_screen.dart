@@ -3883,6 +3883,7 @@ import 'dart:async';
 
 import 'package:coyote_app/components/action_widget.dart';
 import 'package:coyote_app/components/vacuum_gauge_slider.dart';
+import 'package:coyote_app/controller/ble_controller%20copy.dart';
 import 'package:coyote_app/controller/ble_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -3941,6 +3942,12 @@ class _ControlScreenState extends State<ControlScreen> {
                         SizedBox(height: gapTop),
                         _buildHeader(),
                         SizedBox(height: gapAfterHeader),
+                        // Container(
+                        //   height: 100,
+                        //   child: SingleChildScrollView(
+                        //     child: Text(_bleController.msgRcv),
+                        //   ),
+                        // ),
                         SegmentedControl<String>(
                           options: [
                             SegmentOption(

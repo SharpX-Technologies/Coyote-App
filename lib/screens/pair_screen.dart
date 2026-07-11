@@ -764,7 +764,8 @@
 
 import 'dart:async';
 import 'dart:math' as math;
-import 'package:coyote_app/controller/ble_controller.dart';
+import 'package:coyote_app/controller/ble_controller%20copy.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -828,25 +829,23 @@ class _PairScreenState extends State<PairScreen> {
 
     // Cancel any existing scan subscription before starting a new one
     _scanSubscription?.cancel();
-    _bleController.devices.item1.stopScan();
+    _bleController.stopScan();
 
     setState(() {
       _scanResults = [];
       _isScanning = true;
       _connectStates = [];
     });
-FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
+    FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
 
-    
-    _scanSubscription = FlutterBluePlus.scanResults.listen((
-      results,
-    ) {
+    _scanSubscription = FlutterBluePlus.scanResults.listen((results) {
       // Filter only PUCK_ devices and de-duplicate by remoteId so that
       // the same physical device is only shown once.
       final Map<String, ScanResult> uniqueById = {};
       for (final result in results) {
         final name = result.device.advName;
-        if (!name.isNotEmpty) continue;
+        if (!name.startsWith('PUCK_') && !name.startsWith('BlueRadios'))
+          continue;
         uniqueById[result.device.remoteId.str] = result;
       }
       final filteredResults = uniqueById.values.toList();
@@ -872,9 +871,9 @@ FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
     });
   }
 
-  Future<void> _connect(BluetoothDevice device) async {
+  Future<void> _connect(ScanResult scanResult) async {
     await _bleController.connect(
-      device: device,
+      scanResult: scanResult,
       deviceSide: _selectedIndex == 0 ? DeviceSide.left : DeviceSide.right,
     );
   }
@@ -883,7 +882,7 @@ FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
     // Stop any in-progress scan when switching sides to avoid
     // duplicate listeners and stale results.
     _scanSubscription?.cancel();
-    _bleController.devices.item1.stopScan();
+    _bleController.stopScan();
 
     setState(() {
       _selectedIndex = index;
@@ -903,7 +902,7 @@ FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
   @override
   void dispose() {
     _scanSubscription?.cancel();
-    _bleController.devices.item1.stopScan();
+    _bleController.stopScan();
     _inputController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -1091,7 +1090,7 @@ FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
                                   }
                                 });
                                 try {
-                                  await _connect(_scanResults[index].device);
+                                  await _connect(_scanResults[index]);
                                   setState(() {
                                     if (index < _connectStates.length) {
                                       _connectStates[index] =
@@ -1372,7 +1371,9 @@ class _ScanSection extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: _DeviceListTile(
-              deviceId: device.device.advName.replaceFirst('PUCK_', ''),
+              deviceId: device.device.advName.startsWith('PUCK_')
+                  ? device.device.advName.replaceFirst('PUCK_', '')
+                  : device.device.advName.replaceFirst('BlueRadios', 'BR_'),
               state: state,
               onConnect: () => onConnect(index),
             ),
